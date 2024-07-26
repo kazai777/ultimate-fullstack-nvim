@@ -58,3 +58,5 @@ require("lazy").setup({
     },
   },
 })
+
+require("config.gno")

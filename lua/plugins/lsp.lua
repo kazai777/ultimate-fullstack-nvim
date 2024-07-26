@@ -10,6 +10,7 @@ return {
         "tailwindcss-language-server",
         "typescript-language-server",
         "css-lsp",
+        "gofumpt", -- Ajoutez gofumpt ici
       })
     end,
   },
@@ -46,7 +47,7 @@ return {
             javascript = {
               inlayHints = {
                 includeInlayParameterNameHints = "all",
-                includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                includeInlayFunctionParameterNameHintsWhenArgumentMatchesName = false,
                 includeInlayFunctionParameterTypeHints = true,
                 includeInlayVariableTypeHints = true,
                 includeInlayPropertyDeclarationTypeHints = true,
@@ -122,8 +123,36 @@ return {
             },
           },
         },
+        -- Ajout de la configuration pour gopls
+        gopls = {
+          cmd = { "gopls" },
+          filetypes = { "go", "gomod" },
+          root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
+          settings = {
+            gopls = {
+              gofumpt = true, -- Utilisation de gofumpt pour le formatage
+              analyses = {
+                unusedparams = true,
+              },
+              staticcheck = true,
+              usePlaceholders = true,
+            },
+          },
+          on_attach = function(client, bufnr)
+            if client.server_capabilities.document_formatting then
+              local group = vim.api.nvim_create_augroup("LspAutocommands", { clear = true })
+              vim.api.nvim_create_autocmd("BufWritePost", {
+                group = group,
+                buffer = bufnr,
+                callback = function()
+                  vim.lsp.buf.format()
+                end,
+              })
+            end
+          end,
+        },
       },
-      setup = {},
+      setup = {}, -- Gardé vide comme initialement prévu
     },
   },
   {
